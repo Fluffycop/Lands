@@ -1,0 +1,57 @@
+main: com.github.fluffycop.lands.LandsPlugin
+author: Fluffycop
+api-version: 1.15
+name: Lands
+version: 0.1.0
+permissions:
+  lands.cmd.help:
+    default: true
+  lands.cmd.create:
+    default: true
+  lands.cmd.disband:
+    default: true
+  lands.cmd.claim:
+    default: true
+  lands.cmd.unclaim:
+    default: true
+  lands.cmd.invite:
+    default: true
+  lands.cmd.join:
+    default: true
+  lands.cmd.uninvite:
+    default: true
+  lands.cmd.leave:
+    default: true
+  lands.cmd.resign:
+    default: true
+  lands.cmd.kick:
+    default: true
+  lands.*:
+    default: op
+    description: Wildcard permission
+    children:
+      lands.cmd: true
+      lands.admin: true
+  lands.cmd.*:
+    default: true
+    children:
+      lands.cmd.help: true
+      lands.cmd.create: true
+      lands.cmd.disband: true
+      lands.cmd.claim: true
+      lands.cmd.unclaim: true
+      lands.cmd.invite: true
+      lands.cmd.join: true
+      lands.cmd.uninvite: true
+      lands.cmd.leave: true
+      lands.cmd.resign: true
+      lands.cmd.kick: true
+  lands.admin.reload:
+    default: op
+  lands.admin.info:
+    default: op
+  lands.admin.*:
+    default: op
+    children:
+      lands.admin.info: true
+      lands.admin.reload: true
