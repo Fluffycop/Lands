@@ -11,10 +11,12 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -92,12 +94,37 @@ public class JsonPersistenceManager implements PersistenceManager {
             Set<String> dataSet = manager.getPersistentData();
             createAndSave(this.townsFile, dataSet);
             Log.info("Finished saving town data.");
+            purgeDeletedTowns(dataSet);
         }, null);
+    }
+
+    private void purgeDeletedTowns(Set<String> set) {
+        Log.info("Purging deleted towns...");
+        File[] relFiles = relationsFolder.listFiles();
+        File[] landFiles = landFolder.listFiles();
+        if(relFiles != null) {
+            for(File file : relFiles) {
+                if(!set.contains(FileUtil.nameWithoutExtension(file))) {
+                    file.delete();
+                }
+            }
+        } else {
+            throw new IOError(new IOException("An unexpected error occurred while trying to list the files in " + relationsFolder.getAbsolutePath() + "."));
+        }
+        if (landFiles != null) {
+            for(File file : landFiles) {
+                if(!set.contains(FileUtil.nameWithoutExtension(file))) {
+                    file.delete();
+                }
+            }
+        } else {
+            throw new IOError(new IOException("An unexpected error occurred while trying to list the files in " + landFolder.getAbsolutePath() + "."));
+        }
     }
 
     private <T> void saveManagerData(File folder, Map<String, T> dataMap) {
         dataMap.forEach((fileName, data) -> {
-            File file = new File(folder.getAbsolutePath() + File.separator + fileName);
+            File file = new File(folder.getAbsolutePath() + File.separator + fileName + ".json");
             createAndSave(file, data);
         });
     }
@@ -198,9 +225,13 @@ public class JsonPersistenceManager implements PersistenceManager {
 
     @Override
     public void shutdown() {
-        this.saveRelations();
+        try {
+            this.saveTowns().get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new Error(e);
+        }
         this.saveLand();
-        this.saveTowns();
+        this.saveRelations();
 
         relationsPool.shutdown();
         landPool.shutdown();

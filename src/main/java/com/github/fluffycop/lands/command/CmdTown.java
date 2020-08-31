@@ -41,7 +41,7 @@ public class CmdTown extends BaseCommand {
         if (newTown == null) {
             throw new ConditionFailedException("That town name is already taken.");
         } else {
-            Log.info(sender.getName() + " created a new town called: " + name);
+            Log.info(sender.getName() + " created a new town called: " + name.str);
             pl.getRelationManager().makeLeader(newTown, sender);
             pl.getRelationManager().addPlayer(newTown, sender);
             sender.sendMessage(ChatColor.GRAY + "You have created a town called " + ChatColor.GREEN + name);

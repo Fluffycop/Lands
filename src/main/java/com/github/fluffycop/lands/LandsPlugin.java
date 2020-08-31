@@ -59,7 +59,7 @@ public class LandsPlugin extends JavaPlugin {
             commandManager = new CommandManager(this);
             commandManager.configureManager();
             commandManager.setupCommands();
-        } catch (Exception e) {
+        } catch (Error e) {
             e.printStackTrace();
             malformedSetup = true;
             getPluginLoader().disablePlugin(this);
