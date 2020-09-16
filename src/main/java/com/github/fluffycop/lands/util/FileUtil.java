@@ -1,7 +1,5 @@
 package com.github.fluffycop.lands.util;
 
-import com.github.fluffycop.lands.Log;
-
 import java.io.*;
 import java.nio.file.Files;
 

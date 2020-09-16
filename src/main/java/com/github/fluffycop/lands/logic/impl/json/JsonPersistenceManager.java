@@ -4,16 +4,13 @@ import com.github.fluffycop.lands.LandsPlugin;
 import com.github.fluffycop.lands.Log;
 import com.github.fluffycop.lands.entity.ChunkPosition;
 import com.github.fluffycop.lands.logic.PersistenceManager;
-import com.github.fluffycop.lands.logic.TownManager;
 import com.github.fluffycop.lands.util.FileUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;

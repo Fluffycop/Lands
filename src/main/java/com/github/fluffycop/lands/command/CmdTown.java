@@ -13,7 +13,10 @@ import com.github.fluffycop.lands.command.parameters.WrappedString;
 import com.github.fluffycop.lands.entity.ChunkPosition;
 import com.github.fluffycop.lands.entity.Town;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+
+import java.util.function.Predicate;
 
 @CommandAlias("town|t")
 public class CmdTown extends BaseCommand {
@@ -35,57 +38,60 @@ public class CmdTown extends BaseCommand {
 
     @Subcommand("create")
     @CommandPermission("lands.cmd.create")
+    @Description("Create a new town")
     @Syntax("<name>")
     public void create(@Conditions("town:status=townless") Town town, Player sender, WrappedString name) {
         Town newTown = pl.getTownManager().createTown(name.str);
         if (newTown == null) {
-            throw new ConditionFailedException("That town name is already taken.");
+            throw new ConditionFailedException(Msg.TOWN_NAME_TAKEN.msg);
         } else {
-            Log.info(sender.getName() + " created a new town called: " + name.str);
+            Log.info(Msg.CREATE_TOWN.formatLog(sender, newTown));
             pl.getRelationManager().makeLeader(newTown, sender);
             pl.getRelationManager().addPlayer(newTown, sender);
-            sender.sendMessage(ChatColor.GRAY + "You have created a town called " + ChatColor.GREEN + name);
+            sender.sendMessage(Msg.CREATE_TOWN.formatMsg(newTown));
         }
     }
 
     @Subcommand("disband")
     @CommandPermission("lands.cmd.disband")
+    @Description("Disband your town")
     @Syntax("")
     public void disband(@Conditions("town:status=leader") Town town, Player sender) {
-        Log.info(sender.getName() + " disbanded their town: " + town.getName());
+        Log.info(Msg.DISBAND_TOWN.formatLog(sender, town));
         pl.getTownManager().deleteTown(town);
         pl.getRelationManager().delete(town);
         pl.getLandManager().delete(town);
-        sender.sendMessage(ChatColor.GRAY + "Disbanded your town, " + ChatColor.GREEN + town.getName());
-        pl.getRelationManager().getOnlinePlayers(town).stream()
-                .filter(p -> !p.equals(sender))
-                .forEach(p -> p.sendMessage(ChatColor.GREEN + sender.getName() + ChatColor.GRAY + " has disbanded your town."));
-
+        sender.sendMessage(Msg.DISBAND_TOWN.formatMsg());
+        msgMembers(town, p -> !p.equals(sender), Msg.DISBAND_TOWN_OTHER.formatMsg(sender))
     }
 
     @Subcommand("claim")
     @CommandPermission("lands.cmd.claim")
+    @Description("Claim the chunk you are currently in")
     @Syntax("")
     public void claim(@Conditions("town:status=leader") Town town, ChunkPosition pos, Player sender) {
         if (pl.getLandManager().getOwner(pos) != null) {
-            throw new ConditionFailedException("This chunk is already claimed");
+            throw new ConditionFailedException(Msg.CHUNK_ALREADY_CLAIMED.msg);
         }
-        Log.info(sender.getName() + " claimed x: " + pos.getX() + " z: " + pos.getZ() + " in world " + pos.getWorldName() + " for " + town.getName());
+        Log.info(Msg.CLAIM_CHUNK.formatMsg(sender, pos.getX(), pos.getZ(), pos.getWorldName(), town));
         pl.getLandManager().claim(town, pos);
-        sender.sendMessage(ChatColor.GRAY + "Claimed chunk at coordinates " + ChatColor.GREEN + " x:" + pos.getX() + " z:" + pos.getZ());
+        sender.sendMessage(Msg.CLAIM_CHUNK.formatMsg("You"));
+        msgMembers(town, p -> !p.equals(sender), Msg.CLAIM_CHUNK.formatMsg(sender));
     }
 
     @Subcommand("unclaim")
     @CommandPermission("lands.cmd.unclaim")
+    @Description("Unclaim the chunk you are currently in")
     @Syntax("")
     public void unclaim(@Conditions("town:status=leader") Town town, ChunkPosition pos, Player sender) {
         Town currOwner = pl.getLandManager().getOwner(pos);
         if (!town.equals(currOwner)) {
-            throw new ConditionFailedException("You do not own this land.");
+            throw new ConditionFailedException(Msg.DONT_OWN_CHUNK.msg);
         }
-        Log.info(sender.getName() + " unclaimed x: " + pos.getX() + " z: " + pos.getZ() + " in world " + pos.getWorldName() + " for " + town.getName());
+        Log.info(Msg.UNCLAIM_CHUNK.formatLog(sender, pos.getX(), pos.getZ(), pos.getWorldName(), town));
         pl.getLandManager().unclaim(pos);
-        sender.sendMessage(ChatColor.GRAY + "Unclaimed chunk at coordinates " + ChatColor.GREEN + " x:" + pos.getX() + " z:" + pos.getZ());
+        sender.sendMessage(Msg.UNCLAIM_CHUNK.formatMsg("You"));
+        msgMembers(town, p -> !p.equals(sender), Msg.UNCLAIM_CHUNK.formatMsg(sender));
     }
 
     @Subcommand("invite")
@@ -176,5 +182,15 @@ public class CmdTown extends BaseCommand {
         pl.getRelationManager().getOnlinePlayers(town).stream()
                 .filter(p -> !p.equals(sender))
                 .forEach(p -> p.sendMessage(ChatColor.GREEN + sender.getName() + ChatColor.GRAY + " has kicked out " + ChatColor.GREEN + target.player.getName()));
+    }
+
+    private void msgMembers(Town town, String msg) {
+        msgMembers(town, p -> true, msg);
+    }
+
+    private void msgMembers(Town town, Predicate<OfflinePlayer> filter, String msg) {
+        pl.getRelationManager().getOnlinePlayers(town).stream()
+                .filter(filter)
+                .forEach(p -> p.sendMessage(msg));
     }
 }

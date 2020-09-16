@@ -1,8 +1,6 @@
 package com.github.fluffycop.lands.command;
 
-import co.aikar.commands.ConditionFailedException;
-import co.aikar.commands.InvalidCommandArgument;
-import co.aikar.commands.PaperCommandManager;
+import co.aikar.commands.*;
 import com.github.fluffycop.lands.LandsPlugin;
 import com.github.fluffycop.lands.command.parameters.MemberPlayer;
 import com.github.fluffycop.lands.command.parameters.TownlessPlayer;
@@ -11,6 +9,7 @@ import com.github.fluffycop.lands.entity.ChunkPosition;
 import com.github.fluffycop.lands.command.parameters.OtherTown;
 import com.github.fluffycop.lands.entity.Town;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.util.stream.Collectors;
@@ -33,6 +32,10 @@ public class CommandManager {
 
     public void configureManager() {
         manager.enableUnstableAPI("help");
+        manager.setFormat(MessageType.ERROR, ChatColor.RED);
+        manager.setFormat(MessageType.SYNTAX, ChatColor.RED, ChatColor.RED, ChatColor.RED);
+        manager.setFormat(MessageType.HELP, ChatColor.GOLD, ChatColor.YELLOW);
+        manager.setFormat(MessageType.INFO, ChatColor.GRAY, ChatColor.GREEN);
 
         registerContexts();
         registerConditions();
